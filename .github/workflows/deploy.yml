@@ -1,0 +1,25 @@
+name: Deploy to GCP VM
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GCP VM
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.GCP_HOST }}
+          username: ${{ secrets.GCP_USER }}
+          key: ${{ secrets.GCP_SSH_KEY }}
+          script: |
+            cd ~/myapp || mkdir ~/myapp && cd ~/myapp
+            if [ ! -d ".git" ]; then
+              git clone git@github.com:你的用户名/你的仓库.git .
+            fi
+            git pull origin main
+            npm install || true
+            pm2 delete myapp || true
+            pm2 start app.js --name myapp
